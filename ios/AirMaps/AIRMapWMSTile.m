@@ -123,25 +123,7 @@
     return [[NSString alloc] initWithData:oResponseData encoding:NSUTF8StringEncoding];
 }
 
-- (NSString *) getDataFrom:(NSString *)url{
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-    [request setHTTPMethod:@"GET"];
-    [request setURL:[NSURL URLWithString:url]];
-
-    NSError *error = nil;
-    NSHTTPURLResponse *responseCode = nil;
-
-    NSData *oResponseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&responseCode error:&error];
-
-    if([responseCode statusCode] != 200){
-        NSLog(@"Error getting %@, HTTP status code %i", url, [responseCode statusCode]);
-        return nil;
-    }
-
-    return [[NSString alloc] initWithData:oResponseData encoding:NSUTF8StringEncoding];
-}
-
--(NSArray *)getBoundBox:(NSInteger)x yAxis:(NSInteger)y zoom:(NSInteger)zoom isUTM:(NSInteger)isUTM{
++ (NSArray *)getBoundBox:(NSInteger)x yAxis:(NSInteger)y zoom:(NSInteger)zoom isUTM:(NSInteger)isUTM{
     double scale = pow(2.0, zoom);
 
     double x1 = x/scale * 360 - 180;
