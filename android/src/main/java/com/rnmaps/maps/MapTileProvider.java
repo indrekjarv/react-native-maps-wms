@@ -45,40 +45,91 @@ public class MapTileProvider implements TileProvider {
 
 	class AIRMapUrlTileProvider extends UrlTileProvider {
     private String urlTemplate;
+	private int width;
+	private int height;
 
     public AIRMapUrlTileProvider(int width, int height, String urlTemplate) {
       super(width, height);
       this.urlTemplate = urlTemplate;
     }
 
-    @Override
-    public URL getTileUrl(int x, int y, int zoom) {
+	private double convertY(int y, int zoom) {
+		double scale = Math.pow(2.0, zoom);
+		double n = Math.PI - (2.0 * Math.PI * y ) / scale;
+		return  Math.atan(Math.sinh(n)) * 180 / Math.PI;
+	}
 
-      if (MapTileProvider.this.flipY) {
-        y = (1 << zoom) - y - 1;
-      }
+	private double[] getBoundingBox(int x, int y, int zoom) {
+		double scale = Math.pow(2.0, zoom);
 
-      String s = this.urlTemplate
-          .replace("{x}", Integer.toString(x))
-          .replace("{y}", Integer.toString(y))
-          .replace("{z}", Integer.toString(zoom));
-      URL url;
+		double x1 = x/scale * 360 - 180;
+		double x2 = (x+1)/scale * 360 - 180;
 
-      if(MapTileProvider.this.maximumZ > 0 && zoom > MapTileProvider.this.maximumZ) {
-        return null;
-      }
+		double y1 = convertY(y+1,zoom);
+		double y2 = convertY(y,zoom);
 
-      if(MapTileProvider.this.minimumZ > 0 && zoom < MapTileProvider.this.minimumZ) {
-        return null;
-      }
+		return new double[]{
+				x1,
+				y1,
+				x2,
+				y2
+		};
+	}
 
-      try {
-        url = new URL(s);
-      } catch (MalformedURLException e) {
-        throw new AssertionError(e);
-      }
-      return url;
-    }
+	@Override
+	public synchronized URL getTileUrl(int x, int y, int zoom) {
+		Boolean isWMS = false;
+		if (this.urlTemplate.length() > 4) {
+			if (this.urlTemplate.substring(this.urlTemplate.length() - 5).equals("{WMS}")) {
+				isWMS = true;
+			}
+		}
+
+		if (isWMS) {
+			double[] bb = getBoundingBox(x, y, zoom);
+			String s = this.urlTemplate
+					.replace("{minX}", Double.toString(bb[0]))
+					.replace("{minY}", Double.toString(bb[1]))
+					.replace("{maxX}", Double.toString(bb[2]))
+					.replace("{maxY}", Double.toString(bb[3]))
+					.replace("{width}", Integer.toString(1024))
+					.replace("{height}", Integer.toString(1024))
+					.replace("{WMS}", "");
+
+			URL url = null;
+			try {
+				url = new URL(s);
+			} catch (MalformedURLException e) {
+				throw new AssertionError(e);
+			}
+			return url;
+		} else {
+			if (MapTileProvider.this.flipY) {
+				y = (1 << zoom) - y - 1;
+			}
+
+			String s = this.urlTemplate
+					.replace("{x}", Integer.toString(x))
+					.replace("{y}", Integer.toString(y))
+					.replace("{z}", Integer.toString(zoom));
+			URL url;
+
+			if (MapTileProvider.this.maximumZ > 0 && zoom > MapTileProvider.this.maximumZ) {
+				return null;
+			}
+
+			if (MapTileProvider.this.minimumZ > 0 && zoom < MapTileProvider.this.minimumZ) {
+				return null;
+			}
+
+			try {
+				url = new URL(s);
+			} catch (MalformedURLException e) {
+				throw new AssertionError(e);
+			}
+			return url;
+		}
+	}
 
     public void setUrlTemplate(String urlTemplate) {
       this.urlTemplate = urlTemplate;

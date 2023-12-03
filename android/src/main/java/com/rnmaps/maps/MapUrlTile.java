@@ -12,6 +12,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class MapUrlTile extends MapFeature {
+
+  private static final double[] mapBound = {-20037508.34789244, 20037508.34789244};
+  private static final double FULL = 20037508.34789244 * 2;
+
   protected TileOverlayOptions tileOverlayOptions;
   protected TileOverlay tileOverlay;
   protected MapTileProvider tileProvider;

@@ -52,14 +52,27 @@ public class MapWMSTile extends MapUrlTile {
       return url;
     }
 
+    private double convertY(int y, int zoom) {
+        double scale = Math.pow(2.0, zoom);
+        double n = Math.PI - (2.0 * Math.PI * y) / scale;
+        return Math.atan(Math.sinh(n)) *180 / Math.PI;
+    }
+
     private double[] getBoundingBox(int x, int y, int zoom) {
-      double tile = FULL / Math.pow(2, zoom);
-      return new double[]{
-              mapBound[0] + x * tile,
-              mapBound[1] - (y + 1) * tile,
-              mapBound[0] + (x + 1) * tile,
-              mapBound[1] - y * tile
-      };
+        double scale = Math.pow(2.0, zoom);
+
+        double x1 = x/scale * 360 - 180;
+        double x2 = (x+1)/scale * 360 - 180;
+
+        double y1 = convertY(y+1, zoom);
+        double y2 = convertY(y, zoom);
+
+        return new double[]{
+                x1,
+                y1,
+                x2,
+                y2
+        };
     }
 
     public void setUrlTemplate(String urlTemplate) {
@@ -67,8 +80,8 @@ public class MapWMSTile extends MapUrlTile {
     }
   }
 
-  public AIRMapGSUrlTileProvider(int tileSizet, String urlTemplate, 
-    int maximumZ, int maximumNativeZ, int minimumZ, String tileCachePath, 
+  public AIRMapGSUrlTileProvider(int tileSizet, String urlTemplate,
+    int maximumZ, int maximumNativeZ, int minimumZ, String tileCachePath,
     int tileCacheMaxAge, boolean offlineMode, Context context, boolean customMode) {
       super(tileSizet, false, urlTemplate, maximumZ, maximumNativeZ, minimumZ, false,
         tileCachePath, tileCacheMaxAge, offlineMode, context, customMode);

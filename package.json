@@ -5,13 +5,14 @@
   "main": "lib/index.js",
   "author": "Leland Richardson <leland.m.richardson@gmail.com>",
   "homepage": "https://github.com/react-native-maps/react-native-maps#readme",
-  "version": "0.0.0",
+  "version": "1.8.1",
   "license": "MIT",
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "tscheck": "tsc --noEmit",
     "format-check": "prettier --check .",
     "build": "tsc --project tsconfig.build.json",
+    "postinstall": "tsc --project tsconfig.build.json",
     "test": "jest",
     "prepare": "husky install",
     "release": "semantic-release",
@@ -74,7 +75,8 @@
     "typescript": "5.0.4"
   },
   "dependencies": {
-    "@types/geojson": "^7946.0.10"
+    "@types/geojson": "^7946.0.10",
+    "proj4": "^2.7.2"
   },
   "jest": {
     "preset": "react-native",
